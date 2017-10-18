@@ -20,33 +20,18 @@ pub fn merge(orig: &str, edit: &str, common: &str, split: &str) -> Vec<Differenc
     }
 
     while l.peek().is_some() || r.peek().is_some() {
-        let mut same = Vec::new();
-        while l.peek().is_some() && l.peek() == c.peek() && r.peek() == c.peek() {
-            same.push(l.next().unwrap());
+        if l.peek().is_some() && l.peek() == c.peek() && r.peek() == c.peek() {
+            ret.push(Difference::Same(l.next().unwrap().to_string()));
             r.next();
             c.next();
         }
-        if !same.is_empty() {
-            let joined = same.join(split);
-            if split != "" || joined != "" {
-                ret.push(Difference::Same(joined));
-            }
+
+        if l.peek().is_some() && l.peek() != c.peek() {
+            ret.push(Difference::Rem(l.next().unwrap().to_string()));
         }
 
-        let mut rem = Vec::new();
-        while l.peek().is_some() && l.peek() != c.peek() {
-            rem.push(l.next().unwrap());
-        }
-        if !rem.is_empty() {
-            ret.push(Difference::Rem(rem.join(split)));
-        }
-
-        let mut add = Vec::new();
-        while r.peek().is_some() && r.peek() != c.peek() {
-            add.push(r.next().unwrap());
-        }
-        if !add.is_empty() {
-            ret.push(Difference::Add(add.join(split)));
+        if r.peek().is_some() && r.peek() != c.peek() {
+            ret.push(Difference::Add(r.next().unwrap().to_string()));
         }
     }
 
