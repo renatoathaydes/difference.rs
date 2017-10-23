@@ -433,9 +433,9 @@ fn test_diff_anchors_on_similar_lines() {
             Difference::Rem("The sky is blue.".to_string()),
             Difference::Rem("Plants are green.".to_string()),
             Difference::Add("I like sports.".to_string()),
+            Difference::Add("Others prefer maths.".to_string()),
             Difference::Rem("The moon is white.".to_string()),
             Difference::Add("The moon is black.".to_string()),
-            Difference::Rem("The night is black.".to_string()),
             Difference::Add("Unrelated.".to_string()),
         ]
     );
