@@ -1,29 +1,21 @@
 use Difference;
-
-fn split<'a>(text: &'a str, separator: &'a str) -> Box<Iterator<Item=String> + 'a> {
-    let parts = text.split(separator).map(|s| s.to_string());
-    if separator.is_empty() {
-        let mut vec: Vec<String> = parts.collect::<Vec<String>>();
-
-        // split always returns an empty String in the first and last parts, get rid of them
-        vec.remove(0);
-        let last_index = vec.len() - 1;
-        vec.remove(last_index);
-        Box::new(vec.into_iter())
-    } else {
-        Box::new(parts)
-    }
-}
+use split::strsplit;
 
 // merges the changes from two strings, given a common substring
 pub fn merge(orig: &str, edit: &str, common: &str, separator: &str) -> Vec<Difference> {
     let mut ret = Vec::new();
 
-    let mut l = split(orig, separator).peekable();
-    let mut r = split(edit, separator).peekable();
-    let mut c = split(common, separator).peekable();
+    let lv = strsplit(orig, separator);
+    let rv = strsplit(edit, separator);
+    let cv = strsplit(common, separator);
+
+    let mut l = lv.iter().peekable();
+    let mut r = rv.iter().peekable();
+    let mut c = cv.iter().peekable();
 
     while l.peek().is_some() || r.peek().is_some() {
+        println!("L={:?},R={:?},C={:?}", l.peek(), r.peek(), c.peek());
+
         if l.peek().is_some() && l.peek() == c.peek() && r.peek() == c.peek() {
             ret.push(Difference::Same(l.next().unwrap().to_string()));
             r.next();
@@ -41,7 +33,6 @@ pub fn merge(orig: &str, edit: &str, common: &str, separator: &str) -> Vec<Diffe
 
     ret
 }
-
 
 #[test]
 fn test_merge_1() {
