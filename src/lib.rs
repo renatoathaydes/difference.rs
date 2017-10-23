@@ -230,8 +230,10 @@ fn test_diff_brief() {
     assert_eq!(
         changeset.diffs,
         vec![
-            Difference::Rem("Hello\nworld".to_string()),
-            Difference::Add("Ola\nmundo".to_string()),
+            Difference::Rem("Hello".to_string()),
+            Difference::Add("Ola".to_string()),
+            Difference::Rem("world".to_string()),
+            Difference::Add("mundo".to_string()),
         ]
     );
 }
@@ -249,7 +251,8 @@ fn test_diff_smaller_line_count_on_left() {
             Difference::Rem("Hello".to_string()),
             Difference::Add("Ola".to_string()),
             Difference::Same("world".to_string()),
-            Difference::Add("How is it\ngoing?".to_string()),
+            Difference::Add("How is it".to_string()),
+            Difference::Add("going?".to_string()),
         ]
     );
 }
@@ -267,7 +270,9 @@ fn test_diff_smaller_line_count_on_right() {
             Difference::Rem("Hello".to_string()),
             Difference::Add("Ola".to_string()),
             Difference::Same("world".to_string()),
-            Difference::Rem("What a \nbeautiful\nday!".to_string()),
+            Difference::Rem("What a ".to_string()),
+            Difference::Rem("beautiful".to_string()),
+            Difference::Rem("day!".to_string()),
         ]
     );
 }
@@ -283,8 +288,11 @@ fn test_diff_similar_text_with_smaller_line_count_on_right() {
         changeset.diffs,
         vec![
             Difference::Same("Hello".to_string()),
-            Difference::Rem("world\nWhat a \nbeautiful\nday!".to_string()),
+            Difference::Rem("world".to_string()),
             Difference::Add("woRLd".to_string()),
+            Difference::Rem("What a ".to_string()),
+            Difference::Rem("beautiful".to_string()),
+            Difference::Rem("day!".to_string()),
         ]
     );
 }
@@ -300,13 +308,76 @@ fn test_diff_similar_text_with_similar_line_count() {
         changeset.diffs,
         vec![
             Difference::Same("Hello".to_string()),
-            Difference::Rem("world\nWhat a ".to_string()),
+            Difference::Rem("world".to_string()),
             Difference::Add("woRLd".to_string()),
+            Difference::Rem("What a ".to_string()),
             Difference::Same("beautiful".to_string()),
             Difference::Rem("day!".to_string()),
         ]
     );
 }
+
+#[test]
+fn test_diff_very_similar_text_with_same_line_count() {
+    let text1 = "\
+            The sky is blue.\n\
+            Plants are green.\n\
+            The moon is white.\n\
+            The night is black.";
+
+    let text2 = "\
+            The sky is green.\n\
+            Plants are green.\n\
+            The night is white.\n\
+            The moon is black.";
+
+    let changeset = Changeset::new(text1, text2, "\n");
+
+    assert_eq!(
+        changeset.diffs,
+        vec![
+            Difference::Rem("The sky is blue.".to_string()),
+            Difference::Add("The sky is green.".to_string()),
+            Difference::Same("Plants are green.".to_string()),
+            Difference::Rem("The moon is white.".to_string()),
+            Difference::Add("The night is white.".to_string()),
+            Difference::Rem("The night is black.".to_string()),
+            Difference::Add("The moon is black.".to_string()),
+        ]
+    );
+}
+
+#[test]
+fn test_diff_very_different_text_with_same_line_count() {
+    let text1 = "\
+            The sky is blue.\n\
+            Plants are green.\n\
+            The moon is white.\n\
+            The night is black.";
+
+    let text2 = "\
+            I like sports.\n\
+            Others prefer maths.\n\
+            Everyone has different tastes.\n\
+            People are like that.";
+
+    let changeset = Changeset::new(text1, text2, "\n");
+
+    assert_eq!(
+        changeset.diffs,
+        vec![
+            Difference::Rem("The sky is blue.".to_string()),
+            Difference::Rem("Plants are green.".to_string()),
+            Difference::Rem("The moon is white.".to_string()),
+            Difference::Rem("The night is black.".to_string()),
+            Difference::Add("I like sports.".to_string()),
+            Difference::Add("Others prefer maths.".to_string()),
+            Difference::Add("Everyone has different tastes.".to_string()),
+            Difference::Add("People are like that.".to_string()),
+        ]
+    );
+}
+
 
 #[test]
 #[should_panic]
