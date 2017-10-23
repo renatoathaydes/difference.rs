@@ -37,6 +37,7 @@
 #![deny(warnings)]
 
 mod lcs;
+mod split;
 mod merge;
 mod display;
 
@@ -374,6 +375,68 @@ fn test_diff_very_different_text_with_same_line_count() {
             Difference::Add("Others prefer maths.".to_string()),
             Difference::Add("Everyone has different tastes.".to_string()),
             Difference::Add("People are like that.".to_string()),
+        ]
+    );
+}
+
+#[test]
+fn test_diff_can_find_added_lines_before() {
+    let text1 = "\
+            The sky is blue.\n\
+            Plants are green.\n\
+            The moon is white.\n\
+            The night is black.";
+
+    let text2 = "\
+            I like sports.\n\
+            Others prefer maths.\n\
+            The sky is blue.\n\
+            Plants are green.\n\
+            The moon is white.\n\
+            Unrelated.";
+
+    let changeset = Changeset::new(text1, text2, "\n");
+
+    assert_eq!(
+        changeset.diffs,
+        vec![
+            Difference::Add("I like sports.".to_string()),
+            Difference::Add("Others prefer maths.".to_string()),
+            Difference::Same("The sky is blue.".to_string()),
+            Difference::Same("Plants are green.".to_string()),
+            Difference::Same("The moon is white.".to_string()),
+            Difference::Rem("The night is black.".to_string()),
+            Difference::Add("Unrelated.".to_string()),
+        ]
+    );
+}
+
+#[test]
+fn test_diff_anchors_on_similar_lines() {
+    let text1 = "\
+            The sky is blue.\n\
+            Plants are green.\n\
+            The moon is white.\n\
+            The night is black.";
+
+    let text2 = "\
+            I like sports.\n\
+            Others prefer maths.\n\
+            The moon is black.\n\
+            Unrelated.";
+
+    let changeset = Changeset::new(text1, text2, "\n");
+
+    assert_eq!(
+        changeset.diffs,
+        vec![
+            Difference::Rem("The sky is blue.".to_string()),
+            Difference::Rem("Plants are green.".to_string()),
+            Difference::Add("I like sports.".to_string()),
+            Difference::Rem("The moon is white.".to_string()),
+            Difference::Add("The moon is black.".to_string()),
+            Difference::Rem("The night is black.".to_string()),
+            Difference::Add("Unrelated.".to_string()),
         ]
     );
 }
